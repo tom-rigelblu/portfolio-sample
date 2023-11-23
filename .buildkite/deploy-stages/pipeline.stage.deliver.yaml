@@ -1,0 +1,50 @@
+# Copyright 2023 rigélblu inc. All rights reserved.
+
+# Continuous Delivery
+#   determine env › building image › pushing image › staging image › tagging image
+env:
+  # Required so env persist across all steps
+  PROJECT_ID: $PROJECT_ID
+  RUNNER: $RUNNER
+  TRIGGER_REASON: $TRIGGER_REASON
+
+  NEXT_PUBLIC_DEPLOY_STAGE: 'dev' # TODO: rename key in gc secret manager
+  GC_RUN_SERVICE_NAME: ${GC_RUN_SERVICE_NAME}-${NEXT_PUBLIC_DEPLOY_STAGE}
+  GC_SECRET_KEY_NEXT_PUBLIC_ANALYTICS_ID: ${GC_RUN_SERVICE_NAME}_${NEXT_PUBLIC_DEPLOY_STAGE}_NEXT_PUBLIC_ANALYTICS_ID
+  GC_SECRET_KEY_NEXT_PUBLIC_PAYMENT_URL: ${GC_RUN_SERVICE_NAME}_${NEXT_PUBLIC_DEPLOY_STAGE}_NEXT_PUBLIC_PAYMENT_URL
+  GC_SECRET_KEY_TURBO_TOKEN: ${GC_RUN_SERVICE_NAME}_${NEXT_PUBLIC_DEPLOY_STAGE}_TURBO_TOKEN
+  IMAGE: $GC_ARTIFACT_REGION/$PROJECT_ID/$GC_RUN_SERVICE_NAME/$GC_RUN_SERVICE_NAME
+
+agents:
+  queue: 'cicd.rigel.blue'
+
+steps:
+  - group: 'Continuous Delivery'
+    steps:
+      - label: 'building image'
+        command: |
+          cd apps/mgn-public-site/ci/buildkite
+          ./build-image.sh
+        env:
+          TURBO_TEAM: '@rb/mgn-public-site'
+        artifact_paths: 'apps/mgn-public-site/ci/buildkite/docker-build.log'
+        key: deliver:build
+
+      - label: 'pushing image'
+        command: docker push $IMAGE:latest
+        key: deliver:push
+        depends_on: deliver:build
+
+      - label: 'staging image'
+        command: |
+          cd apps/mgn-public-site/ci/buildkite
+          ./stage-image.sh
+        key: deliver:staging
+        depends_on: deliver:push
+
+      - label: 'tagging image'
+        command: |
+          cd apps/mgn-public-site/ci/buildkite
+          ./tag-image.sh
+        key: deliver:tag
+        depends_on: deliver:staging
