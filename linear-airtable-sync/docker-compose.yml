@@ -1,0 +1,13 @@
+# Copyright 2023 rigélblu inc. All rights reserved.
+
+version: '3'
+services:
+  linear-airtable-sync:
+    build:
+      context: .
+      target: runner
+    env_file:
+      - .env.local
+    image: linear-airtable-sync
+    ports:
+      - '8080:8080'

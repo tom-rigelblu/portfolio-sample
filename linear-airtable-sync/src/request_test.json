@@ -1,0 +1,82 @@
+{
+  "headers": {
+    "Host": "65d.ngrok-free.app",
+    "User-Agent": "Linear-Webhook",
+    "Content-Length": "1308",
+    "Accept": "*/*",
+    "Accept-Charset": "utf-8",
+    "Accept-Encoding": "gzip,deflate",
+    "Content-Type": "application/json; charset=utf-8",
+    "Linear-Delivery": "234d1a4e-b617-4388-90fe-adc3633d6b72",
+    "Linear-Event": "Issue",
+    "Linear-Signature": "81fe54652a19b33a5cdbf4cce32596f556b180a622fef02471e5cd5ed5eaed29",
+    "X-Datadog-Parent-Id": "4957797789718103096",
+    "X-Datadog-Sampling-Priority": "-1",
+    "X-Datadog-Trace-Id": "1141541894460890982",
+    "X-Forwarded-For": "35.231.147.226",
+    "X-Forwarded-Proto": "https"
+  },
+  "body": {
+    "action": "create",
+    "createdAt": "2023-07-19T04:11:49.033Z",
+    "data": {
+      "id": "3ee2f2e1-4a91-4fb1-aaed-7194e0dffa7f",
+      "createdAt": "2023-07-19T04:11:49.033Z",
+      "updatedAt": "2023-07-19T04:11:49.033Z",
+      "number": 373,
+      "title": "test",
+      "priority": 0,
+      "boardOrder": 0,
+      "sortOrder": -5955,
+      "teamId": "abdb97b3-98f0-4765-b3bb-2a1af7dc623d",
+      "cycleId": "5fc59e76-165a-414f-8037-96f6ffc74949",
+      "projectId": "4ba07a32-0330-4449-a5e2-1bcbbdfba39d",
+      "previousIdentifiers": [],
+      "creatorId": "f3cbc82f-ebb6-48c4-aebd-ed9ba6021fca",
+      "stateId": "8f57c823-1e2f-478f-9dfc-1eabd7852a42",
+      "priorityLabel": "No priority",
+      "subscriberIds": ["f3cbc82f-ebb6-48c4-aebd-ed9ba6021fca"],
+      "labelIds": ["e77fa888-26b5-11ee-be56-0242ac120002", "d37ad75a-737a-4e5a-adb1-a5d005e3c3d2"],
+      "project": {
+        "id": "4ba07a32-0330-4449-a5e2-1bcbbdfba39d",
+        "name": "rb - prj / 1.4 / sync linear ↔ airtable"
+      },
+      "cycle": {
+        "id": "5fc59e76-165a-414f-8037-96f6ffc74949",
+        "number": 79,
+        "startsAt": "2023-07-17T04:00:00.000Z",
+        "endsAt": "2023-07-24T04:00:00.000Z"
+      },
+      "state": {
+        "id": "8f57c823-1e2f-478f-9dfc-1eabd7852a42",
+        "color": "#f2c94c",
+        "name": "Now / Plan next",
+        "type": "unstarted"
+      },
+      "team": {
+        "id": "abdb97b3-98f0-4765-b3bb-2a1af7dc623d",
+        "key": "RB",
+        "name": "rb foundation"
+      },
+      "labels": [
+        {
+          "id": "e77fa888-26b5-11ee-be56-0242ac120002",
+          "color": "#4cb782",
+          "name": "feature / small",
+          "parentId": "36c0012a-9755-4b72-b2f8-857e7acb33f4"
+        },
+        {
+          "id": "d37ad75a-737a-4e5a-adb1-a5d005e3c3d2",
+          "color": "#bec2c8",
+          "name": "product / linear-airtable-sync",
+          "parentId": "b986192b-08f9-4188-b1a0-9b71794c6861"
+        }
+      ]
+    },
+    "url": "https://linear.app/rigelblu/issue/RB-373/test",
+    "type": "Issue",
+    "organizationId": "0a686c5f-278f-49ee-86c2-e8d2e52f2886",
+    "webhookTimestamp": 1689739909145,
+    "webhookId": "f84efb2e-1cc6-48f9-baad-ff8bba083cd4"
+  }
+}

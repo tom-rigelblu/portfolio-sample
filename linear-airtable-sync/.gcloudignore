@@ -1,0 +1,12 @@
+.editorconfig
+.env.example
+.gcloudignore
+.git
+.github
+.gitignore
+.prettierrc.cjs
+ci
+docker-compose.yml
+Dockerfile
+Makefile
+README.md
