@@ -1,0 +1,39 @@
+# build and cache
+**/.astro
+**/.eslintcache
+**/.next
+**/.stylelintcache
+**/.svelte-kit
+**/.terraform
+**/*.tfstate*
+**/*.tfvars
+**/.turbo
+**/.vercel
+**/build
+**/dist
+**/next-env.d.ts
+**/out
+
+# dependencies
+**/node_modules
+
+# local env files
+**/.env
+**/.env.*
+**/!.env.example
+
+# local data
+# public/local # TODO: temporarily store until we move to CDN
+
+# logs
+**/.pnpm-debug.log*
+**/docker-build.log
+
+# misc
+**/.DS_Store
+**/.favorites.json
+**/.pem
+**/.vscode
+
+# testing
+**/coverage

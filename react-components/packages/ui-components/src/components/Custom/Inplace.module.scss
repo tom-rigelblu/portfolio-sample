@@ -1,0 +1,9 @@
+// Copyright rigélblu inc. All rights reserved.
+
+.mgn-inplace {
+  :global {
+    .p-button.p-button-icon-only {
+      @apply bg-blue-600 p-0.5;
+    }
+  }
+}

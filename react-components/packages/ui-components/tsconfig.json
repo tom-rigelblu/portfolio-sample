@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "extends": "@rb/tsconfig/tsconfig.react.lib.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+
+    "paths": {
+      // base-react-lib
+      "@/rb/ui/hooks/*": ["src/hooks/*"],
+
+      // base-web-wep
+      "@/rb/ui/assets/*": ["src/assets/*"],
+      "@/rb/ui/components/*": ["src/components/*"],
+      "@/rb/ui/locales/*": ["src/locales/*"],
+      "@/rb/ui/state/*": ["src/state/*"],
+      "@/rb/ui/styles/*": ["src/styles/*"],
+
+      // base
+      "@/rb/ui/config/*": ["src/config/*"],
+      "@/rb/ui/data/*": ["src/data/*"],
+      "@/rb/ui/lib/*": ["src/lib/*"]
+    }
+  },
+  "include": ["**/*.ts", "**/*.tsx"],
+  "exclude": ["dist", "build", "node_modules"]
+}
