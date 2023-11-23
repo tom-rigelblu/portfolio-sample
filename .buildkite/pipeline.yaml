@@ -1,0 +1,60 @@
+# Copyright rigélblu inc. All rights reserved.
+
+# Continuous Integration (CI) and Continous Delivery (CD) + Release Pipeline:
+#   pr: pull-request
+#
+# Pipelines:
+#   - default:            pr › ci › cd › push changes to pr (optional) › ci › cd › merge pr › staging › release traffic?
+#   - UI user triggered:  select stage › ci › cd › ask to release traffic?
+#
+# Sub-pipelines:
+#   - ci:                 install deps › linting › running tests
+#   - cd:                 determine env › building image › pushing image › staging image › tagging image
+#   - release traffic?:   release traffic?
+env:
+  # Required so env persist across all steps
+  APP_NAME: $APP_NAME
+
+  IS_CI: 'true'
+  PORT: '8080'
+
+  # FEAT: make region, log level selectable on user triggered builds
+  # Common settings for all pipelines. Can be overrided by ssetting in app/{app}-pipeline.yaml
+  GC_ARTIFACT_REGION: 'us-central1-docker.pkg.dev'
+  GC_RUN_MIN_INSTANCES: 0
+  GC_RUN_MAX_INSTANCES: 1
+  GC_RUN_REGION: us-central1
+  NEXT_PUBLIC_LOG_LEVEL: info
+  NEXT_PUBLIC_STATIC_TOPDOMAIN: googleapis.com
+  NEXT_PUBLIC_STATIC_SUBDOMAIN: storage
+  NEXT_PUBLIC_STATIC_STORAGE_PATH: auto
+  VITE_LOG_LEVEL: info
+
+steps:
+  # FEAT: select apps
+  - block: 'User triggered: Select stage'
+    if: build.source == 'ui'
+    fields:
+      - select: 'Select stage to deploy to'
+        key: selected_deploy_stage
+        options:
+          - label: 'dev'
+            value: 'dev'
+          - label: 'staging'
+            value: 'staging'
+          - label: 'prod'
+            value: 'prod'
+    key: user_triggered:selected_deploy_stage
+
+  - wait
+
+  - label: "Running $APP_NAME pipeline if changed"
+    command: |
+      FILES_CHANGED=$(git diff --name-only main..HEAD | grep '^apps/$APP_NAME' || true)
+      if [[ -z "$$FILES_CHANGED" ]]; then
+        echo "$APP_NAME files did not change. Skipping build"
+        exit 0
+      fi
+
+      .buildkite/run-default-or-user-pipeline.sh
+    depends_on: user_triggered:selected_deploy_stage

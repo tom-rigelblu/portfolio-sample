@@ -1,0 +1,65 @@
+# Copyright rigélblu inc. All rights reserved.
+
+steps:
+  # Continuous Delivery
+  #   default:  pr › ci › cd › push changes to pr (optional) › ci › cd › merge pr › staging › release traffic?
+  - label: 'Run CI ›'
+    command: buildkite-agent pipeline upload .buildkite/deploy-stages/pipeline.stage.ci.yaml
+    key: ci
+
+  # ----- Deliver image -----
+  - label: 'Dev / Deliver PR ›'
+    command: buildkite-agent pipeline upload .buildkite/deploy-stages/pipeline.stage.deliver.yaml
+    if: |
+      build.pull_request.base_branch != null &&
+      (build.branch !~ /main/ || build.env("USER_DEPLOY_STAGE") == 'dev')
+    env:
+      PROJECT_ID: $GC_PROJECT_ID_DEV
+      RUNNER: runner-stage-dev
+      TRIGGER_REASON: pr
+    key: deliver:dev:pr
+
+  - label: 'Dev / Deliver Branch Push ›'
+    command: buildkite-agent pipeline upload .buildkite/deploy-stages/pipeline.stage.deliver.yaml
+    if: |
+      build.pull_request.base_branch == null &&
+      (build.branch !~ /main/ || build.env("USER_DEPLOY_STAGE") == 'dev')
+    env:
+      PROJECT_ID: $GC_PROJECT_ID_DEV
+      RUNNER: runner-stage-dev
+      TRIGGER_REASON: branch-pushed
+    key: deliver:dev:branch-pushed
+
+  - label: 'Prod / Deliver Main Pushed ›'
+    command: buildkite-agent pipeline upload .buildkite/deploy-stages/pipeline.stage.deliver.yaml
+    if: |
+      build.branch =~ /main/ ||
+      build.env("USER_DEPLOY_STAGE") == 'prod'
+    env:
+      PROJECT_ID: $GC_PROJECT_ID_PROD
+      RUNNER: runner-stage-prod
+      TRIGGER_REASON: main-pushed
+    key: deliver:prod
+
+  # ----- Release traffic? -----
+  - label: 'Release traffic?'
+    command: buildkite-agent pipeline upload .buildkite/deploy-stages/pipeline.stage.release.yaml
+    if: |
+      build.branch !~ /main/ ||
+      build.env("USER_DEPLOY_STAGE") == 'dev'
+    env:
+      AUTO_RELEASE_TRAFFIC: true
+      PROJECT_ID: $GC_PROJECT_ID_DEV
+    key: release:dev
+    depends_on: [deliver:dev:pr, deliver:dev:branch-pushed]
+
+  - label: 'Release traffic?'
+    command: buildkite-agent pipeline upload .buildkite/deploy-stages/pipeline.stage.release.yaml
+    if: |
+      build.branch =~ /main/ ||
+      build.env("USER_DEPLOY_STAGE") == 'prod'
+    env:
+      AUTO_RELEASE_TRAFFIC: false
+      PROJECT_ID: $GC_PROJECT_ID_PROD
+    key: release:prod
+    depends_on: deliver:prod

@@ -1,0 +1,60 @@
+# Copyright rigélblu inc. All rights reserved.
+
+# Continuous Integration Pipeline:
+#   install deps › lint › tests
+env:
+  NEXT_PUBLIC_DEPLOY_STAGE: 'ci'
+  GC_SECRET_KEY_NEXT_PUBLIC_ANALYTICS_ID: ${GC_RUN_SERVICE_NAME}_${NEXT_PUBLIC_DEPLOY_STAGE}_NEXT_PUBLIC_ANALYTICS_ID
+  GC_SECRET_KEY_NEXT_PUBLIC_PAYMENT_URL: ${GC_RUN_SERVICE_NAME}_${NEXT_PUBLIC_DEPLOY_STAGE}_NEXT_PUBLIC_PAYMENT_URL
+
+agents:
+  queue: 'cicd.rigel.blue'
+
+steps:
+  - group: 'Continuous Integration'
+    steps:
+      - label: installing deps
+        command: |
+          cd apps/mgn-public-site
+          pnpm install --prod=false --frozen-lockfile -store-dir=~/.local/share/pnpm/store --force # Force is required to do a clean install
+        key: ci:install
+        plugins:
+          - git-clean#v1.0.0:
+              flags: '-fdqx --exclude=node_modules --exclude=.eslintcache --exclude=.next --exclude=.stylelintcache'
+          - cache#v0.6.0:
+              manifest: pnpm-lock.yaml
+              path: node_modules
+              restore: pipeline
+              save: file
+
+      # FIXME: Waiting for folder lock
+      # - label: linting
+      #   command: |
+      #     cd apps/mgn-public-site
+      #     pnpm lint:ci
+      #   key: ci:lint
+      #   depends_on: ci:install
+      #   plugins:
+      #     - git-clean#v1.0.0:
+      #         flags: '-fdqx --exclude=node_modules --exclude=.eslintcache --exclude=.next --exclude=.stylelintcache'
+      #     - cache#v0.6.0:
+      #         path: .eslintcache
+      #         restore: pipeline
+      #         save: pipeline
+      #     - cache#v0.6.0:
+      #         path: .stylelintcache
+      #         restore: pipeline
+      #         save: pipeline
+
+      # TODO: add NEXT_PUBLIC_ANALYTICS_ID, NEXT_PUBLIC_PAYMENT_URL once we have tests dependend on it
+      # export NEXT_PUBLIC_ANALYTICS_ID=$(gcloud secrets versions access latest --secret=$GC_SECRET_NEXT_PUBLIC_ANALYTICS_ID)
+      # export NEXT_PUBLIC_PAYMENT_URL=$(gcloud secrets versions access latest --secret=$GC_SECRET_NEXT_PUBLIC_PAYMENT_URL)
+      - label: running tests
+        command: |
+          cd apps/mgn-public-site
+          pnpm test
+        key: ci:tests
+        depends_on: ci:install
+        plugins:
+          - git-clean#v1.0.0:
+              flags: '-fdqx --exclude=node_modules --exclude=.eslintcache --exclude=.next --exclude=.stylelintcache'

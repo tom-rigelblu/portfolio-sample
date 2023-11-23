@@ -1,0 +1,51 @@
+# Copyright 2023 rigélblu inc. All rights reserved.
+
+# Relase traffic to image:
+#   feature branch (i.e. non main):   always
+#   main branch:                      require approval
+env:
+  # Required so env persist across all steps
+  AUTO_RELEASE_TRAFFIC: $AUTO_RELEASE_TRAFFIC
+  PROJECT_ID: $PROJECT_ID
+
+  NEXT_PUBLIC_DEPLOY_STAGE: 'release'
+  GC_RUN_SERVICE_NAME: ${GC_RUN_SERVICE_NAME}-${NEXT_PUBLIC_DEPLOY_STAGE}
+  GC_SECRET_KEY_NEXT_PUBLIC_ANALYTICS_ID: ${GC_RUN_SERVICE_NAME}_${NEXT_PUBLIC_DEPLOY_STAGE}_NEXT_PUBLIC_ANALYTICS_ID
+  GC_SECRET_KEY_NEXT_PUBLIC_PAYMENT_URL: ${GC_RUN_SERVICE_NAME}_${NEXT_PUBLIC_DEPLOY_STAGE}_NEXT_PUBLIC_PAYMENT_URL
+
+agents:
+  queue: 'cicd.rigel.blue'
+
+steps:
+  - group: 'Release traffic?'
+    steps:
+      - block: 'Require approval to release traffic in prod'
+        if: |
+          build.pull_request.base_branch != null &&
+          (build.branch =~ /main/ && !$AUTO_RELEASE_TRAFFIC)
+        fields:
+          - select: 'Release'
+            key: release_traffic
+            options:
+              - label: 'Yes'
+                value: 'true'
+              - label: 'No'
+                value: 'false'
+        key: release:question
+
+      - label: 'Release traffic based on selection'
+        command: |
+          RELEASE_TRAFFIC=$(buildkite-agent meta-data get release_traffic)
+
+          if [[ "$$RELEASE_TRAFFIC" == "true" ]]; then
+            echo 🟢 Releasing traffic to staging image
+            gcloud run services update-traffic $GC_RUN_SERVICE_NAME \
+              --region $GC_RUN_REGION \
+              --to-latest
+          else
+            echo ⚪️ No changes to routing traffic
+          fi
+        if: |
+          build.pull_request.base_branch == null &&
+          build.branch =~ /main/
+        depends_on: release:question

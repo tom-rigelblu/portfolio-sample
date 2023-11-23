@@ -1,0 +1,13 @@
+# Copyright rigélblu inc. All rights reserved.
+
+# Put custom env vars or override common ones from ../pipeline.yaml here
+env:
+  GC_RUN_SERVICE_NAME: home-internal
+  GC_PROJECT_ID_DEV: rb-internal
+  GC_PROJECT_ID_PROD: rb-internal
+
+steps:
+  - group:
+    steps:
+    - label: 'home internal ›'
+      command: buildkite-agent pipeline upload .buildkite/apps/default-pipeline.yaml
