@@ -1,0 +1,43 @@
+# Copyright 2023 rigélblu inc. All rights reserved.
+
+# Buildkite pipeline name: rb / ops / linear-airtable-sync / prod / continuous delivery
+env:
+  DEPLOY_ENV: 'production'
+  DEPLOY_STAGE: 'live'
+  GCP_FUNCTION_NAME: 'linear-airtable-sync'
+  GCP_MIN_INSTANCES: '0'
+  GCP_MAX_INSTANCES: '2'
+  GCP_MEMORY: '256Mi'
+  GCP_PROJECT_ID: 'rb-prod-REDACTED'
+  GCP_RUNTIME: 'python311'
+  GCP_REGION: 'us-central1'
+  GCP_TIMEOUT: '20s'
+  LINEAR_LOG_LEVEL: 'INFO'
+  NODE_ENV: 'production'
+  TRIGGER_REASON: 'continuous-delivery'
+
+steps:
+  - label: 'Config & Auth'
+    command: |
+      gcloud beta config set project $GCP_PROJECT_ID
+    key: auth
+
+  # TODO retrieve from gcp secrets manager
+  # --set-build-env-vars=LINEAR_SIGNING_SECRET
+  - label: 'Deploy'
+    command: |
+      gcloud functions deploy $GCP_FUNCTION_NAME \
+        --gen2 \
+        --runtime=$GCP_RUNTIME \
+        --region=$GCP_REGION \
+        --source=. \
+        --entry-point=handle_request_on_gcf \
+        --min-instances=$GCP_MIN_INSTANCES --max-instances=$GCP_MAX_INSTANCES \
+        --memory=$GCP_MEMORY \
+        --update-env-vars=DEPLOY_ENV=$DEPLOY_ENV,DEPLOY_STAGE=$DEPLOY_STAGE \
+        --update-env-vars=LINEAR_LOG_LEVEL=$LINEAR_LOG_LEVEL \
+        --timeout=$GCP_TIMEOUT \
+        --trigger-http \
+        --allow-unauthenticated
+    key: deploy
+    depends_on: auth
